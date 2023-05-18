@@ -7,6 +7,7 @@
 #include <chrono>
 #include <stdlib.h> // free
 #include <malloc.h> // free, allocate
+#include <iomanip> // манипуляторы для форматного вывода
 
 //#include <time.h>
 #include <sstream>
@@ -41,8 +42,8 @@ int main(void)
 	int array[N4]; // сортируемый массив
     void (*f[])(int *, int, ofstream &) = {BubbleSort, ShakerSort, NonRecursiveQuickSort , NaturalMergeSort }; // массив указателей на функции
 	vector<int> data; // массив с исходными элементами
-	string time_table_header = " время нс. | тыс. | изначально \n"; // 11|13|12
-	string operations_table_header = "основные | второстепенные\n";
+	string time_table_header = "    время нс.   | тыс. | изначально \n"; // 12|6|12
+	string operations_table_header = "    основные    | второстепенные | тыс. | изначально \n"; // 16|16|6|12
 
 	ofstream fout_bubble, fout_shaker, fout_quick, fout_merge;
 	fout_bubble.exceptions(ofstream::badbit | ofstream::failbit);
@@ -55,24 +56,30 @@ int main(void)
 		fout_shaker.open("Shaker.txt");
 		fout_quick.open("Quick.txt");
 		fout_merge.open("Merge.txt");
-		fout_bubble << operations_table_header;
+
+		fout_bubble << time_table_header;
+		fout_shaker << time_table_header;
+		fout_quick << time_table_header;
+		fout_merge << time_table_header;
+
+		/* fout_bubble << operations_table_header;
 		fout_shaker << operations_table_header;
 		fout_quick << operations_table_header;
-		fout_merge << operations_table_header;
+		fout_merge << operations_table_header; */
 	}
 	catch(const exception& ex)
 	{
 		cerr << ex.what() << endl;
 		std::cout << "Ошибка открытия файла" << endl << "ENTER";
 		while(cin.get() != '\n');
-		abort;
+		abort();
 	}
 
 	if(ReadFile(data, N4)) // считываем необходимое количество чисел из файла
 	{
 		std::cout << "ENTER" << endl;
 		while(cin.get() != '\n');
-		abort;
+		abort();
 	}
 
 
@@ -85,16 +92,16 @@ int main(void)
 
 			// если массив не отсортирован
 			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge )); // сортируем массив
-			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | не отсортирован" << endl;
+			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << "|" << setw(15) << left << "не отсортирован" << endl;
 
 			// если массив отсортирован
 			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge )); // сортируем массив
-			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | отсортирован" << endl;
+			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << "|" << setw(15) << left << "отсортирован" << endl;
 			
 			// если массив отсортирован, но нужно его развернуть
 			ReverseArray(array, N); // разворачиваем массив
 			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge)); // сортируем массив
-			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | развёрнут" << endl;
+			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << "|" << setw(15) << left << "развёрнут" << endl;
 
 		}
 	}
@@ -210,8 +217,8 @@ void BubbleSort (int *a, int n, ofstream &fout) // сортировка пузырьком
 				a[j] = itmp;
 			}
 	end_time = chrono::steady_clock::now();
-	//fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n/1000;
-	fout << mainC << " | " << secondaryC << " | " << n/1000 ;
+	fout << setw(16) << left << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" << setw(6) << n/1000;
+	//fout << setw(16) << left << mainC << "|" << setw(16) << left <<secondaryC << "|" << setw(6) << n/1000 ;
 }
 
 void ShakerSort (int *a, int n, ofstream &fout)
@@ -243,8 +250,8 @@ void ShakerSort (int *a, int n, ofstream &fout)
 	}
 	while (secondaryC++, left<right);	//и так до тех пор, пока есть что просматривать
 	end_time = chrono::steady_clock::now();
-	//fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n/1000;
-	fout << mainC << " | " << secondaryC << " | " << n/1000 ;
+	fout << setw(16) << left << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" << setw(6) << n/1000;
+	//fout << setw(16) << left << mainC << "|" << setw(16) << left <<secondaryC << "|" << setw(6) << n/1000 ;
 }
 
 void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
@@ -303,8 +310,8 @@ void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
 	}while (s>-1);
 	end_time = chrono::steady_clock::now();
 	free (stack);
-	//fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n / 1000 ;
-	fout << mainC << " | " << secondaryC << " | " << n/1000 ;
+	fout << setw(16) << left << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" << setw(6) << n/1000;
+	//fout << setw(16) << left << mainC << "|" << setw(16) << left <<secondaryC << "|" << setw(6) << n/1000 ;
 }
 
 void NaturalMergeSort(int *a, int n, ofstream &fout)
@@ -363,6 +370,6 @@ void NaturalMergeSort(int *a, int n, ofstream &fout)
         free (tmp);
 	
 	end_time = chrono::steady_clock::now();
-	//fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n / 1000 ;
-	fout << mainC << " | " << secondaryC << " | " << n/1000 ;
+	fout << setw(16) << left << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" << setw(6) << n/1000;
+	//fout << setw(16) << left << mainC << "|" << setw(16) << left <<secondaryC << "|" << setw(6) << n/1000 ;
 }
