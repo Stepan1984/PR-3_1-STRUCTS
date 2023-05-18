@@ -5,13 +5,16 @@
 #include <math.h>
 #include <vector>
 #include <chrono>
+#include <stdlib.h> // free
+#include <malloc.h> // free, allocate
+
 //#include <time.h>
 #include <sstream>
 
-#define N1 10000
+#define N1 20000
 #define N2 50000
-#define N3 100000
-#define N4 150000
+#define N3 80000
+#define N4 110000
 
 using namespace std;
 
@@ -33,13 +36,13 @@ void NaturalMergeSort(int *a, int n, ofstream &fout); // сортировка естественным
 int main(void)
 {
     setlocale(LC_ALL, "Rus"); 
-	int a ,i, j, l, m, s; // итераторы
-	int countrM, countrH; // счётчики основных и вспомогательный операций
+	int a, s; // итераторы
 	int amounts[4] = {N1, N2, N3, N4}, N; // массив с необходимыми количествами эл-ов в массивах // количество эл-ов в данном массиве
 	int array[N4]; // сортируемый массив
     void (*f[])(int *, int, ofstream &) = {BubbleSort, ShakerSort, NonRecursiveQuickSort , NaturalMergeSort }; // массив указателей на функции
 	vector<int> data; // массив с исходными элементами
-	string table_header = " время нс. | тыс. | изначально \n"; // 11|13|12
+	string time_table_header = " время нс. | тыс. | изначально \n"; // 11|13|12
+	string operations_table_header = "основные | второстепенные\n";
 
 	ofstream fout_bubble, fout_shaker, fout_quick, fout_merge;
 	fout_bubble.exceptions(ofstream::badbit | ofstream::failbit);
@@ -52,10 +55,10 @@ int main(void)
 		fout_shaker.open("Shaker.txt");
 		fout_quick.open("Quick.txt");
 		fout_merge.open("Merge.txt");
-		fout_bubble << table_header;
-		fout_shaker << table_header;
-		fout_quick << table_header;
-		fout_merge << table_header;
+		fout_bubble << operations_table_header;
+		fout_shaker << operations_table_header;
+		fout_quick << operations_table_header;
+		fout_merge << operations_table_header;
 	}
 	catch(const exception& ex)
 	{
@@ -79,28 +82,20 @@ int main(void)
 		for(a = 0; a < 4; a++) // перебор алгоритмов сортировки
 		{
 			CopyData(data, array, N); // копируем данные в массив
-			for(m = 0; m < 3; m++) // перебор исходных состояний массива (0 - неотсортирован, 1 - отсортирован, 2 - развёрнут)
-			{
-				if(!m) // если массив не отсортирован
-				{
-					f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge )); // сортируем массив
-					//WriteFile(array, N, 0, a); // записываем результат в файл для проверки
-					(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | не отсортирован" << endl;
-				}
-				if(m == 1) // если массив отсортирован
-				{
-					f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge )); // сортируем массив
-					//WriteFile(array, N, 1, a); // записываем результат в файл
-					(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | отсортирован" << endl;
-				}
-				if(m == 2) // если массив отсортирован, но нужно его развернуть
-				{
-					ReverseArray(array, N); // разворачиваем массив
-					f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge)); // сортируем массив
-					//WriteFile(array, N, 2, a); // записываем результат в файл для проверки
-					(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | развёрнут" << endl;
-				}
-			}
+
+			// если массив не отсортирован
+			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge )); // сортируем массив
+			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | не отсортирован" << endl;
+
+			// если массив отсортирован
+			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge )); // сортируем массив
+			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | отсортирован" << endl;
+			
+			// если массив отсортирован, но нужно его развернуть
+			ReverseArray(array, N); // разворачиваем массив
+			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge)); // сортируем массив
+			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << " | развёрнут" << endl;
+
 		}
 	}
 	fout_bubble.close();
@@ -203,29 +198,32 @@ void ReverseArray(int * array, int N) // функция разворота массива
 void BubbleSort (int *a, int n, ofstream &fout) // сортировка пузырьком
 {
 	int i, j, itmp;
+	long unsigned int mainC = 0, secondaryC = 0; // mainCompares // secondaryCompares
 	chrono::steady_clock::time_point start_time, end_time; // переменные для подсчёта времени работы алгоритма
     start_time = chrono::steady_clock::now();
-	for (i = 1; i < n; i++)
-		for (j = n - 1; j >= i; j--)
-			if (a[j-1] > a[j])
+	for (i = 1; secondaryC++, i < n; i++)
+		for (j = n - 1; secondaryC++, j >= i; j--)
+			if (mainC++, a[j-1] > a[j])
 			{
 				itmp = a[j-1];
 				a[j-1] = a[j];
 				a[j] = itmp;
 			}
 	end_time = chrono::steady_clock::now();
-	fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n/1000;
+	//fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n/1000;
+	fout << mainC << " | " << secondaryC << " | " << n/1000 ;
 }
 
 void ShakerSort (int *a, int n, ofstream &fout)
 {
+	unsigned long int mainC = 0, secondaryC = 0; 
 	int j, k = n-1, left = 1, right = n-1, x;
 	chrono::steady_clock::time_point start_time, end_time; // переменные для подсчёта времени работы алгоритма
     start_time = chrono::steady_clock::now();
 	do
 	{
-		for (j=right; j>=left; j--)	//сначала просматриваем справа налево
-			if (a[j-1]>a[j])
+		for (j=right; secondaryC++, j>=left; j--)	//сначала просматриваем справа налево
+			if (mainC++, a[j-1]>a[j])
 			{
 				x = a[j-1];
 				a[j-1] = a[j];
@@ -233,8 +231,8 @@ void ShakerSort (int *a, int n, ofstream &fout)
 				k = j;
 			}
 		left = k+1;
-		for (j=left; j<=right; j++)	//а теперь просматриваем слева направо
-			if (a[j-1]>a[j])
+		for (j=left;secondaryC++, j<=right; j++)	//а теперь просматриваем слева направо
+			if (mainC++, a[j-1]>a[j])
 			{
 				x = a[j-1];
 				a[j-1] = a[j];
@@ -243,13 +241,16 @@ void ShakerSort (int *a, int n, ofstream &fout)
 			}
 		right = k-1;
 	}
-	while (left<right);	//и так до тех пор, пока есть что просматривать
+	while (secondaryC++, left<right);	//и так до тех пор, пока есть что просматривать
 	end_time = chrono::steady_clock::now();
-	fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n/1000;
+	//fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n/1000;
+	fout << mainC << " | " << secondaryC << " | " << n/1000 ;
 }
 
 void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
 {
+	unsigned long int mainC = 0, secondaryC = 0;
+
 	const int M=log(n)/log(2)+1;
 	int i, j, left, right, s, x, w;
 	struct stack {int left, right;} *stack;
@@ -272,23 +273,23 @@ void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
 			x = a[(left+right)/2];
 			do
 			{
-				while (a[i]<x) i++;
-				while (x<a[j]) j--;
-				if (i<=j)
+				while (mainC++, a[i]<x) i++; 
+				while (mainC++, x<a[j]) j--; 
+				if (secondaryC++, i<=j) // проверяем индексы
 				{
 					w = a[i]; a[i] = a[j]; a[j] = w;
 					i++; j--;
 				}
 			}
-			while (i<j);
-			if (i<right && right-i>=j-left)     //если правая часть не меньше левой
+			while (secondaryC++, i<j);
+			if (secondaryC+=2, i<right && right-i>=j-left)     //если правая часть не меньше левой
 			{                                   //запись в стек границ правой части
 				s++;
 				stack[s].left = i;
 				stack[s].right = right;
 				right = j;      //теперь left и right ограничивают левую часть
 			}
-			else if (j>left && j-left>right-i)   //если левая часть больше правой
+			else if (secondaryC+=2, j>left && j-left>right-i)   //если левая часть больше правой
 			{                                    //запись в стек границ левой части
 				s++;
 				stack[s].left = left;
@@ -297,16 +298,19 @@ void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
 			}
 			else left = right;     //делить больше нечего, интервал "схлопывается"
 
-		}while (left<right);
+		}while (secondaryC++, left<right);
 
 	}while (s>-1);
 	end_time = chrono::steady_clock::now();
-	fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n / 1000 ;
 	free (stack);
+	//fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n / 1000 ;
+	fout << mainC << " | " << secondaryC << " | " << n/1000 ;
 }
 
 void NaturalMergeSort(int *a, int n, ofstream &fout)
 {
+	unsigned long int mainC = 0, secondaryC = 0;
+
     int split;                   // индекс, по которому делим массив
     int last, end, i, *p=a, *tmp;
     char flag = 0, sorted = 0;
@@ -322,36 +326,36 @@ void NaturalMergeSort(int *a, int n, ofstream &fout)
         do
         {
             p += pos2; end = n - pos3;
-            for (split=1; split < end && p[split-1] <= p[split]; split++); //первая серия
-            if (split == n) {sorted = 1 ; break;}
+            for (split=1; secondaryC++, mainC++, split < end && p[split-1] <= p[split]; split++); //первая серия
+            if (secondaryC++, split == n) {sorted = 1 ; break;}
             pos1 = 0; pos2 = split;
-            while ( pos1 < split && pos2 < end ) 	// идет слияние, пока есть хоть один элемент в каждой серии
+            while (secondaryC+=2, pos1 < split && pos2 < end ) 	// идет слияние, пока есть хоть один элемент в каждой серии
             {
-                if (p[pos1] < p[pos2])
+                if (mainC++, p[pos1] < p[pos2])
                     tmp[pos3++] = p[pos1++];
                 else
                 {
                     tmp[pos3++] = p[pos2++];
-                    if (p[pos2] < p[pos2-1]) break;
+                    if (mainC++, p[pos2] < p[pos2-1]) break;
                 }
             }
             // одна последовательность закончилась - копировать остаток другой в конец буфера
-            while ( pos2 < end && tmp[pos3-1]<=p[pos2] )  			 // пока вторая последовательность не пуста
+            while (secondaryC++, mainC++, pos2 < end && tmp[pos3-1]<=p[pos2] )  			 // пока вторая последовательность не пуста
                 tmp[pos3++] = p[pos2++];
-            while ( pos1 < split )  		// пока первая последовательность не пуста
+            while ( secondaryC++, pos1 < split )  		// пока первая последовательность не пуста
                 tmp[pos3++] = p[pos1++];
         }
-        while (pos3 < n );
+        while (secondaryC++, pos3 < n );
         if (sorted) break;
         p = tmp;
         tmp = a;
         a = p;
         flag = !flag;
     }
-    while (split<n);
+    while (secondaryC++, split<n);
     if (flag)
     {
-        for (pos1 = 0; pos1 < n; pos1++)
+        for (pos1 = 0; secondaryC++, pos1 < n; pos1++)
             tmp[pos1] = a[pos1];
         free (a);
     }
@@ -359,5 +363,6 @@ void NaturalMergeSort(int *a, int n, ofstream &fout)
         free (tmp);
 	
 	end_time = chrono::steady_clock::now();
-	fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n / 1000 ;
+	//fout << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << " | " << n / 1000 ;
+	fout << mainC << " | " << secondaryC << " | " << n/1000 ;
 }
