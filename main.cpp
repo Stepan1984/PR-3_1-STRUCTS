@@ -37,30 +37,28 @@ void NaturalMergeSort(int *a, int n, ofstream &fout); // сортировка естественным
 int main(void)
 {
     setlocale(LC_ALL, "Rus"); 
-	int a, s; // итераторы
+	int a, s, i; // итераторы
 	int amounts[4] = {N1, N2, N3, N4}, N; // массив с необходимыми количествами эл-ов в массивах // количество эл-ов в данном массиве
 	int array[N4]; // сортируемый массив
     void (*f[])(int *, int, ofstream &) = {BubbleSort, ShakerSort, NonRecursiveQuickSort , NaturalMergeSort }; // массив указателей на функции
 	vector<int> data; // массив с исходными элементами
 	string table_header = "    время нс.   |    основные    | второстепенные | память | тыс. |  изначально   \n"; // 16|16|16|8|6|15
+	string filenames[4] = {"Bubble.txt","Shaker.txt", "Quick.txt","Merge.txt" };
 
-	ofstream fout_bubble, fout_shaker, fout_quick, fout_merge;
-	fout_bubble.exceptions(ofstream::badbit | ofstream::failbit);
-	fout_shaker.exceptions(ofstream::badbit | ofstream::failbit);
-	fout_quick.exceptions(ofstream::badbit | ofstream::failbit);
-	fout_merge.exceptions(ofstream::badbit | ofstream::failbit);
+	
+
+	ofstream* files = new ofstream[4];
+  	for (int i = 0; i < 4; i++)
+    	files[i].exceptions(ofstream::badbit | ofstream::failbit);
+
 	try
 	{ // создаём файлы для хранения времени работы сортировок
-		fout_bubble.open("Bubble.txt");
-		fout_shaker.open("Shaker.txt");
-		fout_quick.open("Quick.txt");
-		fout_merge.open("Merge.txt");
-
-		fout_bubble << table_header;
-		fout_shaker << table_header;
-		fout_quick << table_header;
-		fout_merge << table_header;
-
+		for(i = 0; i < 4; i++)
+		{
+			files[i].open(filenames[i].c_str());
+			files[i] << table_header;
+		}
+		
 	}
 	catch(const exception& ex)
 	{
@@ -86,24 +84,25 @@ int main(void)
 			CopyData(data, array, N); // копируем данные в массив
 
 			// если массив не отсортирован
-			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge )); // сортируем массив
-			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << "|" << setw(15) << left << "не отсортирован" << endl;
+			f[a](array, N, files[a]); // сортируем массив
+			files[a] << "|" << setw(15) << left << "не отсортирован" << endl;
 
 			// если массив отсортирован
-			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge )); // сортируем массив
-			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << "|" << setw(15) << left << "отсортирован" << endl;
+			f[a](array, N, files[a]); // сортируем массив
+			files[a] << "|" << setw(15) << left << "отсортирован" << endl;
 			
 			// если массив отсортирован, но нужно его развернуть
 			ReverseArray(array, N); // разворачиваем массив
-			f[a](array, N, (!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge)); // сортируем массив
-			(!a? fout_bubble: a == 1? fout_shaker: a == 2? fout_quick : fout_merge ) << "|" << setw(15) << left << "развёрнут" << endl;
+			f[a](array, N, files[a]); // сортируем массив
+			files[a] << "|" << setw(15) << left << "развёрнут" << endl;
 
 		}
 	}
-	fout_bubble.close();
-	fout_shaker.close();
-	fout_quick.close();
-	fout_merge.close();
+	for( i = 0; i < 4; i++)
+		files[i].close();
+
+	delete[] files;
+
     return 1;
 }
 
@@ -204,10 +203,10 @@ void BubbleSort (int *a, int n, ofstream &fout) // сортировка пузырьком
 	int i, j, itmp; memory += 3 * sizeof(int); 
 	chrono::steady_clock::time_point start_time, end_time; // переменные для подсчёта времени работы алгоритма
     start_time = chrono::steady_clock::now();
-	for (i = 1; secondaryC++, i < n; i++)
-		for (j = n - 1; secondaryC++, j >= i; j--)
+	for (i = 1; secondaryC++ && i < n; i++)
+		for (j = n - 1; secondaryC++ && j >= i; j--)
 
-			if (mainC++, a[j-1] > a[j])
+			if (mainC++ && a[j-1] > a[j])
 			{
 				itmp = a[j-1];
 				a[j-1] = a[j];
@@ -226,17 +225,17 @@ void ShakerSort (int *a, int n, ofstream &fout)
     start_time = chrono::steady_clock::now();
 	do
 	{
-		for (j=right; secondaryC++, j>=left; j--)	//сначала просматриваем справа налево
-			if (mainC++, a[j-1]>a[j])
+		for (j=right; secondaryC++ && j >= left; j--)	//сначала просматриваем справа налево
+			if (mainC++ && a[j-1] > a[j])
 			{
 				x = a[j-1];
 				a[j-1] = a[j];
 				a[j] = x;
 				k = j;
 			}
-		left = k+1;
-		for (j=left;secondaryC++, j<=right; j++)	//а теперь просматриваем слева направо
-			if (mainC++, a[j-1]>a[j])
+		left = k + 1;
+		for (j = left; secondaryC++ && j <= right; j++)	//а теперь просматриваем слева направо
+			if (mainC++ && a[j-1] > a[j])
 			{
 				x = a[j-1];
 				a[j-1] = a[j];
@@ -244,8 +243,7 @@ void ShakerSort (int *a, int n, ofstream &fout)
 				k = j;
 			}
 		right = k-1;
-	}
-	while (secondaryC++, left<right);	//и так до тех пор, пока есть что просматривать
+	}while (secondaryC++ && left < right);	//и так до тех пор, пока есть что просматривать
 	end_time = chrono::steady_clock::now();
 	fout << setw(16) << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" 
 		<< setw(16) << mainC << "|" << setw(16) << secondaryC << "|" << setw(6) << n/1000;
@@ -277,23 +275,23 @@ void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
 			x = a[(left+right)/2];
 			do
 			{
-				while (mainC++, a[i]<x) i++; 
-				while (mainC++, x<a[j]) j--; 
-				if (secondaryC++, i<=j) // проверяем индексы
+				while (mainC++ && a[i]<x) i++; 
+				while (mainC++ && x<a[j]) j--; 
+				if (secondaryC++ && i<=j) // проверяем индексы
 				{
 					w = a[i]; a[i] = a[j]; a[j] = w;
 					i++; j--;
 				}
 			}
-			while (secondaryC++, i<j);
-			if (secondaryC+=2, i<right && right-i>=j-left)     //если правая часть не меньше левой
+			while (secondaryC++ && i<j);
+			if (secondaryC++ && i<right && right-i>=j-left && secondaryC++)     //если правая часть не меньше левой
 			{                                   //запись в стек границ правой части
 				s++;
 				stack[s].left = i;
 				stack[s].right = right;
 				right = j;      //теперь left и right ограничивают левую часть
 			}
-			else if (secondaryC+=2, j>left && j-left>right-i)   //если левая часть больше правой
+			else if (secondaryC++ && j>left && j-left>right-i && secondaryC++)   //если левая часть больше правой
 			{                                    //запись в стек границ левой части
 				s++;
 				stack[s].left = left;
@@ -302,9 +300,9 @@ void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
 			}
 			else left = right;     //делить больше нечего, интервал "схлопывается"
 
-		}while (secondaryC++, left<right);
+		}while (secondaryC++ && left<right);
 
-	}while (s>-1);
+	}while (secondaryC++ && s>-1);
 	end_time = chrono::steady_clock::now();
 	free (stack);
 	fout << setw(16) << right << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" 
@@ -330,36 +328,37 @@ void NaturalMergeSort(int *a, int n, ofstream &fout)
         do
         {
             p += pos2; end = n - pos3;
-            for (split=1; secondaryC++, split < end && p[split-1] <= p[split] , mainC++; split++); //первая серия
-            if (secondaryC++, split == n) {sorted = 1 ; break;}
+            for (split=1; secondaryC++ && split < end && p[split-1] <= p[split] && mainC++; split++); //первая серия
+            if (secondaryC++ && split == n) {sorted = 1 ; break;}
             pos1 = 0; pos2 = split;
-            while (secondaryC++, pos1 < split && pos2 < end, secondaryC++ ) 	// идет слияние, пока есть хоть один элемент в каждой серии
+            while (secondaryC++ && pos1 < split && pos2 < end && secondaryC++ ) 	// идет слияние, пока есть хоть один элемент в каждой серии
             {
-                if (mainC++, p[pos1] < p[pos2])
+				
+                if (mainC++ && p[pos1] < p[pos2])
                     tmp[pos3++] = p[pos1++];
                 else
                 {
                     tmp[pos3++] = p[pos2++];
-                    if (mainC++, p[pos2] < p[pos2-1]) break;
+                    if (mainC++ && p[pos2] < p[pos2-1]) break;
                 }
             }
             // одна последовательность закончилась - копировать остаток другой в конец буфера
-            while (secondaryC++, pos2 < end && tmp[pos3-1]<=p[pos2], mainC++ )  			 // пока вторая последовательность не пуста
+            while (secondaryC++ && pos2 < end && tmp[pos3-1]<=p[pos2] && mainC++ )  			 // пока вторая последовательность не пуста
                 tmp[pos3++] = p[pos2++];
-            while ( secondaryC++, pos1 < split )  		// пока первая последовательность не пуста
+            while ( secondaryC++ && pos1 < split )  		// пока первая последовательность не пуста
                 tmp[pos3++] = p[pos1++];
         }
-        while (secondaryC++, pos3 < n );
+        while (secondaryC++ && pos3 < n );
         if (sorted) break;
         p = tmp;
         tmp = a;
         a = p;
         flag = !flag;
     }
-    while (secondaryC++, split<n);
+    while (secondaryC++ && split<n);
     if (flag)
     {
-        for (pos1 = 0; secondaryC++, pos1 < n; pos1++)
+        for (pos1 = 0; secondaryC++ && pos1 < n; pos1++)
             tmp[pos1] = a[pos1];
         free (a);
     }
