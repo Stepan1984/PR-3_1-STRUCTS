@@ -1,48 +1,33 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <locale.h>
-#include <math.h>
-#include <vector>
-#include <chrono>
-#include <stdlib.h> // free
-#include <malloc.h> // free, allocate
-#include <iomanip> // манипуляторы для форматного вывода
-
-//#include <time.h>
-#include <sstream>
-
-#define N1 20000
-#define N2 50000
-#define N3 80000
-#define N4 110000
+//#include "generator.cpp" 
+#include "preproc.h"
 
 using namespace std;
 
-/* вспомогательные функции */
-int ReadFile(vector<int> &array, int n); // чтение файла
-void WriteFile(int * array, int N, int status_before_sort, int sort_type); // запись в файл 
-int CopyData(vector<int> &data, int * array, int N); // копирование необходимого количества элементов
-void ReverseArray(int * array, int N); // разворот массива
+/* РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё */
+int ReadFile(vector<int> &array, int n); // С‡С‚РµРЅРёРµ С„Р°Р№Р»Р°
+void WriteFile(int * array, int N, int status_before_sort, int sort_type); // Р·Р°РїРёСЃСЊ РІ С„Р°Р№Р» 
+int CopyData(vector<int> &data, int * array, int N); // РєРѕРїРёСЂРѕРІР°РЅРёРµ РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° СЌР»РµРјРµРЅС‚РѕРІ
+void ReverseArray(int * array, int N); // СЂР°Р·РІРѕСЂРѕС‚ РјР°СЃСЃРёРІР°
 
-/* алгоритмы сортировки */
-void BubbleSort (int *a, int n, ofstream &fout); // сортировка пузырьком
-void ShakerSort (int *a, int n, ofstream &fout);  // шейкерная сортировка
-void NonRecursiveQuickSort (int *a, int n, ofstream &fout); // быстрая сортировка (нерекурсивная)
-void NaturalMergeSort(int *a, int n, ofstream &fout); // сортировка естественным слиянием
+/* Р°Р»РіРѕСЂРёС‚РјС‹ СЃРѕСЂС‚РёСЂРѕРІРєРё */
+void BubbleSort (int *a, int n, ofstream &fout); // СЃРѕСЂС‚РёСЂРѕРІРєР° РїСѓР·С‹СЂСЊРєРѕРј
+void ShakerSort (int *a, int n, ofstream &fout);  // С€РµР№РєРµСЂРЅР°СЏ СЃРѕСЂС‚РёСЂРѕРІРєР°
+void NonRecursiveQuickSort (int *a, int n, ofstream &fout); // Р±С‹СЃС‚СЂР°СЏ СЃРѕСЂС‚РёСЂРѕРІРєР° (РЅРµСЂРµРєСѓСЂСЃРёРІРЅР°СЏ)
+void NaturalMergeSort(int *a, int n, ofstream &fout); // СЃРѕСЂС‚РёСЂРѕРІРєР° РµСЃС‚РµСЃС‚РІРµРЅРЅС‹Рј СЃР»РёСЏРЅРёРµРј
 
 
 
-/* Вспомогательные функции */
+/* Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё */
 int main(void)
 {
+	cout << __cplusplus << endl;
     setlocale(LC_ALL, "Rus"); 
-	int a, s, i; // итераторы
-	int amounts[4] = {N1, N2, N3, N4}, N; // массив с необходимыми количествами эл-ов в массивах // количество эл-ов в данном массиве
-	int array[N4]; // сортируемый массив
-    void (*f[])(int *, int, ofstream &) = {BubbleSort, ShakerSort, NonRecursiveQuickSort , NaturalMergeSort }; // массив указателей на функции
-	vector<int> data; // массив с исходными элементами
-	string table_header = "    время нс.   |    основные    | второстепенные | память | тыс. |  изначально   \n"; // 16|16|16|8|6|15
+	int a, s, i; // РёС‚РµСЂР°С‚РѕСЂС‹
+	int amounts[4] = {N1, N2, N3, N4}, N; // РјР°СЃСЃРёРІ СЃ РЅРµРѕР±С…РѕРґРёРјС‹РјРё РєРѕР»РёС‡РµСЃС‚РІР°РјРё СЌР»-РѕРІ РІ РјР°СЃСЃРёРІР°С… // РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»-РѕРІ РІ РґР°РЅРЅРѕРј РјР°СЃСЃРёРІРµ
+	int array[N4]; // СЃРѕСЂС‚РёСЂСѓРµРјС‹Р№ РјР°СЃСЃРёРІ
+    void (*f[])(int *, int, ofstream &) = {BubbleSort, ShakerSort, NonRecursiveQuickSort , NaturalMergeSort }; // РјР°СЃСЃРёРІ СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° С„СѓРЅРєС†РёРё
+	vector<int> data; // РјР°СЃСЃРёРІ СЃ РёСЃС…РѕРґРЅС‹РјРё СЌР»РµРјРµРЅС‚Р°РјРё
+	string table_header = "    РІСЂРµРјСЏ РЅСЃ.   |    РѕСЃРЅРѕРІРЅС‹Рµ    | РІС‚РѕСЂРѕСЃС‚РµРїРµРЅРЅС‹Рµ | РїР°РјСЏС‚СЊ | С‚С‹СЃ. |  РёР·РЅР°С‡Р°Р»СЊРЅРѕ   \n"; // 16|16|16|8|6|15
 	string filenames[4] = {"Bubble.txt","Shaker.txt", "Quick.txt","Merge.txt" };
 
 	
@@ -52,7 +37,7 @@ int main(void)
     	files[i].exceptions(ofstream::badbit | ofstream::failbit);
 
 	try
-	{ // создаём файлы для хранения времени работы сортировок
+	{ // СЃРѕР·РґР°С‘Рј С„Р°Р№Р»С‹ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РІСЂРµРјРµРЅРё СЂР°Р±РѕС‚С‹ СЃРѕСЂС‚РёСЂРѕРІРѕРє
 		for(i = 0; i < 4; i++)
 		{
 			files[i].open(filenames[i].c_str());
@@ -63,12 +48,12 @@ int main(void)
 	catch(const exception& ex)
 	{
 		cerr << ex.what() << endl;
-		std::cout << "Ошибка открытия файла" << endl << "ENTER";
+		std::cout << "РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ С„Р°Р№Р»Р°" << endl << "ENTER";
 		while(cin.get() != '\n');
 		return 101;
 	}
 
-	if(ReadFile(data, N4)) // считываем необходимое количество чисел из файла
+	if(ReadFile(data, N4)) // СЃС‡РёС‚С‹РІР°РµРј РЅРµРѕР±С…РѕРґРёРјРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‡РёСЃРµР» РёР· С„Р°Р№Р»Р°
 	{
 		std::cout << "ENTER" << endl;
 		while(cin.get() != '\n');
@@ -76,25 +61,25 @@ int main(void)
 	}
 
 
-    for(s = 0; s < 4; s++) // перебор размеров массива
+    for(s = 0; s < 4; s++) // РїРµСЂРµР±РѕСЂ СЂР°Р·РјРµСЂРѕРІ РјР°СЃСЃРёРІР°
 	{
-		N = amounts[s]; // запоминаем количество эл-ов в нынешнем массиве
-		for(a = 0; a < 4; a++) // перебор алгоритмов сортировки
+		N = amounts[s]; // Р·Р°РїРѕРјРёРЅР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»-РѕРІ РІ РЅС‹РЅРµС€РЅРµРј РјР°СЃСЃРёРІРµ
+		for(a = 0; a < 4; a++) // РїРµСЂРµР±РѕСЂ Р°Р»РіРѕСЂРёС‚РјРѕРІ СЃРѕСЂС‚РёСЂРѕРІРєРё
 		{
-			CopyData(data, array, N); // копируем данные в массив
+			CopyData(data, array, N); // РєРѕРїРёСЂСѓРµРј РґР°РЅРЅС‹Рµ РІ РјР°СЃСЃРёРІ
 
-			// если массив не отсортирован
-			f[a](array, N, files[a]); // сортируем массив
-			files[a] << "|" << setw(15) << left << "не отсортирован" << endl;
+			// РµСЃР»Рё РјР°СЃСЃРёРІ РЅРµ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅ
+			f[a](array, N, files[a]); // СЃРѕСЂС‚РёСЂСѓРµРј РјР°СЃСЃРёРІ
+			files[a] << "|" << setw(15) << left << "РЅРµ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅ" << endl;
 
-			// если массив отсортирован
-			f[a](array, N, files[a]); // сортируем массив
-			files[a] << "|" << setw(15) << left << "отсортирован" << endl;
+			// РµСЃР»Рё РјР°СЃСЃРёРІ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅ
+			f[a](array, N, files[a]); // СЃРѕСЂС‚РёСЂСѓРµРј РјР°СЃСЃРёРІ
+			files[a] << "|" << setw(15) << left << "РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅ" << endl;
 			
-			// если массив отсортирован, но нужно его развернуть
-			ReverseArray(array, N); // разворачиваем массив
-			f[a](array, N, files[a]); // сортируем массив
-			files[a] << "|" << setw(15) << left << "развёрнут" << endl;
+			// РµСЃР»Рё РјР°СЃСЃРёРІ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅ, РЅРѕ РЅСѓР¶РЅРѕ РµРіРѕ СЂР°Р·РІРµСЂРЅСѓС‚СЊ
+			ReverseArray(array, N); // СЂР°Р·РІРѕСЂР°С‡РёРІР°РµРј РјР°СЃСЃРёРІ
+			f[a](array, N, files[a]); // СЃРѕСЂС‚РёСЂСѓРµРј РјР°СЃСЃРёРІ
+			files[a] << "|" << setw(15) << left << "СЂР°Р·РІС‘СЂРЅСѓС‚" << endl;
 
 		}
 	}
@@ -106,31 +91,31 @@ int main(void)
     return 1;
 }
 
-int ReadFile(vector<int> &array, int n) // функция чтения файла
+int ReadFile(vector<int> &array, int n) // С„СѓРЅРєС†РёСЏ С‡С‚РµРЅРёСЏ С„Р°Р№Р»Р°
 {
     int i = 0, itmp;
-    ifstream fin; // создаём поток
-    fin.exceptions(ifstream::badbit | ifstream::failbit); // для обработки исключительных ситуаций при открытие
+    ifstream fin; // СЃРѕР·РґР°С‘Рј РїРѕС‚РѕРє
+    fin.exceptions(ifstream::badbit | ifstream::failbit); // РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РёСЃРєР»СЋС‡РёС‚РµР»СЊРЅС‹С… СЃРёС‚СѓР°С†РёР№ РїСЂРё РѕС‚РєСЂС‹С‚РёРµ
     try
     {
-        fin.open("test_numbers.txt"); // открываем поток на чтение файла
-        cout << "файл успешно открыт" << endl;
-		while(i < n) // пока не считали нужное количество чисел из файла
+        fin.open("test_numbers.txt"); // РѕС‚РєСЂС‹РІР°РµРј РїРѕС‚РѕРє РЅР° С‡С‚РµРЅРёРµ С„Р°Р№Р»Р°
+        cout << "С„Р°Р№Р» СѓСЃРїРµС€РЅРѕ РѕС‚РєСЂС‹С‚" << endl;
+		while(i < n) // РїРѕРєР° РЅРµ СЃС‡РёС‚Р°Р»Рё РЅСѓР¶РЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‡РёСЃРµР» РёР· С„Р°Р№Р»Р°
 		{
 			fin >> itmp; 
-			array.push_back(itmp); // пушим элементы в конец массива
+			array.push_back(itmp); // РїСѓС€РёРј СЌР»РµРјРµРЅС‚С‹ РІ РєРѕРЅРµС† РјР°СЃСЃРёРІР°
 			i++;
 		}
     }
-    catch(const exception& ex) // отлавливаем ошибки при открытии
+    catch(const exception& ex) // РѕС‚Р»Р°РІР»РёРІР°РµРј РѕС€РёР±РєРё РїСЂРё РѕС‚РєСЂС‹С‚РёРё
     {
         cerr << ex.what() << endl;
-        cout << "Ошибка открытия файла" << endl;
+        cout << "РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ С„Р°Р№Р»Р°" << endl;
         while(cin.get() != '\n');
 		return 1;
     }
 
-    fin.close(); // закрываем поток
+    fin.close(); // Р·Р°РєСЂС‹РІР°РµРј РїРѕС‚РѕРє
 	return 0;
 }
 
@@ -149,7 +134,7 @@ void WriteFile(int * array, int N, int status_before_sort, int sort_type) // typ
 	try
 	{
 		fout.open(filename);
-		cout << "файл успешно создан" << endl;
+		cout << "С„Р°Р№Р» СѓСЃРїРµС€РЅРѕ СЃРѕР·РґР°РЅ" << endl;
 		i = 0;
 		while(i < N)
 		{
@@ -164,7 +149,7 @@ void WriteFile(int * array, int N, int status_before_sort, int sort_type) // typ
 	catch(const exception& ex)
 	{
 		cerr << ex.what() << endl;
-		cout << "Ошибка открытия файла" << endl;
+		cout << "РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ С„Р°Р№Р»Р°" << endl;
 		while(cin.get() != '\n');
 	}
 	fout.close();
@@ -184,7 +169,7 @@ int CopyData(vector<int> &data, int * array, int N)
 	return 1;
 }
 
-void ReverseArray(int * array, int N) // функция разворота массива
+void ReverseArray(int * array, int N) // С„СѓРЅРєС†РёСЏ СЂР°Р·РІРѕСЂРѕС‚Р° РјР°СЃСЃРёРІР°
 {
 	int itmp, half = N / 2;
 	for(int i = 0, j = N - 1; i < half; i++, j--)
@@ -196,17 +181,16 @@ void ReverseArray(int * array, int N) // функция разворота массива
 }
 
 
-/* Алгоритмы сортировки */
-void BubbleSort (int *a, int n, ofstream &fout) // сортировка пузырьком
+/* РђР»РіРѕСЂРёС‚РјС‹ СЃРѕСЂС‚РёСЂРѕРІРєРё */
+void BubbleSort (int *a, int n, ofstream &fout) // СЃРѕСЂС‚РёСЂРѕРІРєР° РїСѓР·С‹СЂСЊРєРѕРј
 {
 	long unsigned int mainC = 0, secondaryC = 0, memory = 0; // mainCompares // secondaryCompares
 	int i, j, itmp; memory += 3 * sizeof(int); 
-	chrono::steady_clock::time_point start_time, end_time; // переменные для подсчёта времени работы алгоритма
+	chrono::steady_clock::time_point start_time, end_time; // РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РїРѕРґСЃС‡С‘С‚Р° РІСЂРµРјРµРЅРё СЂР°Р±РѕС‚С‹ Р°Р»РіРѕСЂРёС‚РјР°
     start_time = chrono::steady_clock::now();
-	for (i = 1; secondaryC++ && i < n; i++)
+	for (i = 1; ++secondaryC && i < n; i++)
 		for (j = n - 1; secondaryC++ && j >= i; j--)
-
-			if (mainC++ && a[j-1] > a[j])
+			if (++mainC && a[j-1] > a[j])
 			{
 				itmp = a[j-1];
 				a[j-1] = a[j];
@@ -221,11 +205,11 @@ void ShakerSort (int *a, int n, ofstream &fout)
 {
 	unsigned long int mainC = 0, secondaryC = 0, memory = 0; 
 	int j, k = n-1, left = 1, right = n-1, x; memory += 5*sizeof(int);
-	chrono::steady_clock::time_point start_time, end_time; // переменные для подсчёта времени работы алгоритма
+	chrono::steady_clock::time_point start_time, end_time; // РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РїРѕРґСЃС‡С‘С‚Р° РІСЂРµРјРµРЅРё СЂР°Р±РѕС‚С‹ Р°Р»РіРѕСЂРёС‚РјР°
     start_time = chrono::steady_clock::now();
 	do
 	{
-		for (j=right; secondaryC++ && j >= left; j--)	//сначала просматриваем справа налево
+		for (j=right; ++secondaryC && j >= left; j--)	//СЃРЅР°С‡Р°Р»Р° РїСЂРѕСЃРјР°С‚СЂРёРІР°РµРј СЃРїСЂР°РІР° РЅР°Р»РµРІРѕ
 			if (mainC++ && a[j-1] > a[j])
 			{
 				x = a[j-1];
@@ -234,8 +218,8 @@ void ShakerSort (int *a, int n, ofstream &fout)
 				k = j;
 			}
 		left = k + 1;
-		for (j = left; secondaryC++ && j <= right; j++)	//а теперь просматриваем слева направо
-			if (mainC++ && a[j-1] > a[j])
+		for (j = left; ++secondaryC && j <= right; j++)	//Р° С‚РµРїРµСЂСЊ РїСЂРѕСЃРјР°С‚СЂРёРІР°РµРј СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+			if (++mainC && a[j-1] > a[j])
 			{
 				x = a[j-1];
 				a[j-1] = a[j];
@@ -243,10 +227,10 @@ void ShakerSort (int *a, int n, ofstream &fout)
 				k = j;
 			}
 		right = k-1;
-	}while (secondaryC++ && left < right);	//и так до тех пор, пока есть что просматривать
+	}while(++secondaryC && left < right);	//Рё С‚Р°Рє РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° РµСЃС‚СЊ С‡С‚Рѕ РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ
 	end_time = chrono::steady_clock::now();
-	fout << setw(16) << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" 
-		<< setw(16) << mainC << "|" << setw(16) << secondaryC << "|" << setw(6) << n/1000;
+fout << setw(16) << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" 
+		<< setw(16) << mainC << "|" << setw(16) << secondaryC << "|" << setw(8) << memory << "|" << setw(6) << n/1000;
 }
 
 void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
@@ -261,104 +245,105 @@ void NonRecursiveQuickSort (int *a, int n, ofstream &fout)
 	stack[0].left = 0;
 	stack[0].right = n-1;
 
-	chrono::steady_clock::time_point start_time, end_time; // переменные для подсчёта времени работы алгоритма
+	chrono::steady_clock::time_point start_time, end_time; // РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РїРѕРґСЃС‡С‘С‚Р° РІСЂРµРјРµРЅРё СЂР°Р±РѕС‚С‹ Р°Р»РіРѕСЂРёС‚РјР°
     start_time = chrono::steady_clock::now();
 
-	do 				//выбор из стека последнего запроса
+	do 				//РІС‹Р±РѕСЂ РёР· СЃС‚РµРєР° РїРѕСЃР»РµРґРЅРµРіРѕ Р·Р°РїСЂРѕСЃР°
 	{
 		left = stack[s].left;
 		right = stack[s].right;
 		s--;
-		do			//разделение а[left]… a[right]
+		do			//СЂР°Р·РґРµР»РµРЅРёРµ Р°[left]вЂ¦ a[right]
 		{
 			i = left; j = right;
 			x = a[(left+right)/2];
 			do
 			{
-				while (mainC++ && a[i]<x) i++; 
-				while (mainC++ && x<a[j]) j--; 
-				if (secondaryC++ && i<=j) // проверяем индексы
+				while (++mainC && a[i]<x) i++; 
+				while (++mainC && x<a[j]) j--; 
+				if (++secondaryC && i<=j) // РїСЂРѕРІРµСЂСЏРµРј РёРЅРґРµРєСЃС‹
 				{
 					w = a[i]; a[i] = a[j]; a[j] = w;
 					i++; j--;
 				}
 			}
-			while (secondaryC++ && i<j);
-			if (secondaryC++ && i<right && right-i>=j-left && secondaryC++)     //если правая часть не меньше левой
-			{                                   //запись в стек границ правой части
+			while (++secondaryC && i<j);
+			if (++secondaryC && i<right && ++secondaryC && right-i>=j-left)     //РµСЃР»Рё РїСЂР°РІР°СЏ С‡Р°СЃС‚СЊ РЅРµ РјРµРЅСЊС€Рµ Р»РµРІРѕР№
+			{                                   //Р·Р°РїРёСЃСЊ РІ СЃС‚РµРє РіСЂР°РЅРёС† РїСЂР°РІРѕР№ С‡Р°СЃС‚Рё
 				s++;
 				stack[s].left = i;
 				stack[s].right = right;
-				right = j;      //теперь left и right ограничивают левую часть
+				right = j;      //С‚РµРїРµСЂСЊ left Рё right РѕРіСЂР°РЅРёС‡РёРІР°СЋС‚ Р»РµРІСѓСЋ С‡Р°СЃС‚СЊ
 			}
-			else if (secondaryC++ && j>left && j-left>right-i && secondaryC++)   //если левая часть больше правой
-			{                                    //запись в стек границ левой части
+			else if (++secondaryC && j>left && ++secondaryC && j-left>right-i )   //РµСЃР»Рё Р»РµРІР°СЏ С‡Р°СЃС‚СЊ Р±РѕР»СЊС€Рµ РїСЂР°РІРѕР№
+			{                                    //Р·Р°РїРёСЃСЊ РІ СЃС‚РµРє РіСЂР°РЅРёС† Р»РµРІРѕР№ С‡Р°СЃС‚Рё
 				s++;
 				stack[s].left = left;
 				stack[s].right = j;
-				left = i;      //теперь left и right ограничивают правую часть
+				left = i;      //С‚РµРїРµСЂСЊ left Рё right РѕРіСЂР°РЅРёС‡РёРІР°СЋС‚ РїСЂР°РІСѓСЋ С‡Р°СЃС‚СЊ
 			}
-			else left = right;     //делить больше нечего, интервал "схлопывается"
+			else left = right;     //РґРµР»РёС‚СЊ Р±РѕР»СЊС€Рµ РЅРµС‡РµРіРѕ, РёРЅС‚РµСЂРІР°Р» "СЃС…Р»РѕРїС‹РІР°РµС‚СЃСЏ"
 
-		}while (secondaryC++ && left<right);
+		}while (++secondaryC && left<right);
 
-	}while (secondaryC++ && s>-1);
+	}while (++secondaryC && s>-1);
 	end_time = chrono::steady_clock::now();
 	free (stack);
-	fout << setw(16) << right << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" 
-		<< setw(16) << right << mainC << "|" << setw(16) << right << secondaryC << "|" << setw(6) << n/1000;
+	fout << setw(16) << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" 
+		<< setw(16) << mainC << "|" << setw(16) << secondaryC << "|" << setw(8) << memory << "|" << setw(6) << n/1000;
 }
 
 void NaturalMergeSort(int *a, int n, ofstream &fout)
 {
 	unsigned long int mainC = 0, secondaryC = 0, memory = 0;
 
-    int split;                   // индекс, по которому делим массив
+    int split;                   // РёРЅРґРµРєСЃ, РїРѕ РєРѕС‚РѕСЂРѕРјСѓ РґРµР»РёРј РјР°СЃСЃРёРІ
     int last, end, i, *p=a, *tmp; memory += 2 * sizeof(int*);
     char flag = 0, sorted = 0; memory += 2 * sizeof(char);
     int pos1, pos2, pos3; memory += 7 * sizeof(int);
     tmp = (int*) malloc (n*sizeof(int)); memory += n * sizeof(int);
 
-	chrono::steady_clock::time_point start_time, end_time; // переменные для подсчёта времени работы алгоритма
+	chrono::steady_clock::time_point start_time, end_time; // РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РїРѕРґСЃС‡С‘С‚Р° РІСЂРµРјРµРЅРё СЂР°Р±РѕС‚С‹ Р°Р»РіРѕСЂРёС‚РјР°
     start_time = chrono::steady_clock::now();
 
-    do                 // если есть более 1 элемента
+    do                 // РµСЃР»Рё РµСЃС‚СЊ Р±РѕР»РµРµ 1 СЌР»РµРјРµРЅС‚Р°
     {
         end = n; pos2 = pos3 = 0;
         do
         {
             p += pos2; end = n - pos3;
-            for (split=1; secondaryC++ && split < end && p[split-1] <= p[split] && mainC++; split++); //первая серия
-            if (secondaryC++ && split == n) {sorted = 1 ; break;}
+            for (split=1; ++secondaryC && split < end && ++mainC && p[split-1] <= p[split]; split++); //РїРµСЂРІР°СЏ СЃРµСЂРёСЏ
+            if (++secondaryC && split == n) 
+				{sorted = 1 ; break;}
             pos1 = 0; pos2 = split;
-            while (secondaryC++ && pos1 < split && pos2 < end && secondaryC++ ) 	// идет слияние, пока есть хоть один элемент в каждой серии
+            while (++secondaryC && pos1 < split && ++secondaryC && pos2 < end ) 	// РёРґРµС‚ СЃР»РёСЏРЅРёРµ, РїРѕРєР° РµСЃС‚СЊ С…РѕС‚СЊ РѕРґРёРЅ СЌР»РµРјРµРЅС‚ РІ РєР°Р¶РґРѕР№ СЃРµСЂРёРё
             {
 				
-                if (mainC++ && p[pos1] < p[pos2])
+                if (++mainC && p[pos1] < p[pos2])
                     tmp[pos3++] = p[pos1++];
                 else
                 {
                     tmp[pos3++] = p[pos2++];
-                    if (mainC++ && p[pos2] < p[pos2-1]) break;
+                    if (++mainC && p[pos2] < p[pos2-1]) break;
                 }
             }
-            // одна последовательность закончилась - копировать остаток другой в конец буфера
-            while (secondaryC++ && pos2 < end && tmp[pos3-1]<=p[pos2] && mainC++ )  			 // пока вторая последовательность не пуста
+            // РѕРґРЅР° РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ Р·Р°РєРѕРЅС‡РёР»Р°СЃСЊ - РєРѕРїРёСЂРѕРІР°С‚СЊ РѕСЃС‚Р°С‚РѕРє РґСЂСѓРіРѕР№ РІ РєРѕРЅРµС† Р±СѓС„РµСЂР°
+            while (++secondaryC && pos2 < end && ++mainC && tmp[pos3-1]<=p[pos2] )  			 // РїРѕРєР° РІС‚РѕСЂР°СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РЅРµ РїСѓСЃС‚Р°
                 tmp[pos3++] = p[pos2++];
-            while ( secondaryC++ && pos1 < split )  		// пока первая последовательность не пуста
+            while ( ++secondaryC && pos1 < split )  		// РїРѕРєР° РїРµСЂРІР°СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РЅРµ РїСѓСЃС‚Р°
                 tmp[pos3++] = p[pos1++];
         }
-        while (secondaryC++ && pos3 < n );
+        while (++secondaryC && pos3 < n );
         if (sorted) break;
         p = tmp;
         tmp = a;
         a = p;
         flag = !flag;
     }
-    while (secondaryC++ && split<n);
+    while (++secondaryC && split<n);
     if (flag)
     {
-        for (pos1 = 0; secondaryC++ && pos1 < n; pos1++)
+        for (pos1 = 0; ++secondaryC && pos1 < n; pos1++)
             tmp[pos1] = a[pos1];
         free (a);
     }
@@ -366,6 +351,8 @@ void NaturalMergeSort(int *a, int n, ofstream &fout)
         free (tmp);
 	
 	end_time = chrono::steady_clock::now();
-	fout << setw(16) << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" 
-		<< setw(16) << mainC << "|" << setw(16) << secondaryC << "|" << setw(6) << n/1000;
+	/* fout << setw(16) << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << "|" 
+		<< setw(16) << mainC << "|" << setw(16) << secondaryC << "|" << setw(8) << memory << "|" << setw(6) << n/1000; */
+
+	cout << setw(16) << chrono::duration_cast<chrono::nanoseconds>(end_time - start_time).count() << endl;
 }
